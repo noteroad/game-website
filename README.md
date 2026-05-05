@@ -1,4 +1,4 @@
-# [Developer Name] Game Website
+# Dundun Games Game Website
 
 Google Play 개발자 웹사이트, 개인정보처리방침, 지원 페이지, AdMob `app-ads.txt`를 위한 무료 정적 홈페이지입니다.
 
@@ -18,10 +18,10 @@ Google Play 개발자 웹사이트, 개인정보처리방침, 지원 페이지, 
 
 ## 바꿔야 할 값 체크리스트
 
-- `[Developer Name]`: Google Play에 표시할 개발자명 또는 스튜디오명
+- `Dundun Games`: Google Play에 표시할 개발자명 또는 스튜디오명
 - `[Game Name]`: 앱/게임 이름
-- `[support@example.com]`: 지원 문의 이메일
-- `[example.com]`: 실제 사용할 도메인
+- `dundunhada@gmail.com`: 지원 문의 이메일
+- `dundungames.com`: 실제 사용할 도메인
 - `[Google Play URL]`: Google Play 스토어 등록 후 생성되는 앱 URL
 - `[pub-xxxxxxxxxxxxxxxx]`: AdMob Publisher ID
 
@@ -44,7 +44,7 @@ google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
 배포 후 아래 주소에서 파일 내용이 보여야 합니다.
 
 ```text
-https://[example.com]/app-ads.txt
+https://dundungames.com/app-ads.txt
 ```
 
 ## 추천 배포 방식
@@ -81,10 +81,10 @@ Production branch: main
 ## Google Play에 넣을 URL 예시
 
 ```text
-Developer website: https://[example.com]/
-Privacy policy: https://[example.com]/privacy.html
-Support: https://[example.com]/support.html
-app-ads.txt: https://[example.com]/app-ads.txt
+Developer website: https://dundungames.com/
+Privacy policy: https://dundungames.com/privacy.html
+Support: https://dundungames.com/support.html
+app-ads.txt: https://dundungames.com/app-ads.txt
 ```
 
 ## 개인정보처리방침 주의
