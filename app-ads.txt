@@ -1,0 +1,5 @@
+# Replace the placeholder publisher ID after AdMob provides your app-ads.txt line.
+# Example for AdMob:
+# google.com, pub-xxxxxxxxxxxxxxxx, DIRECT, f08c47fec0942fa0
+
+google.com, pub-xxxxxxxxxxxxxxxx, DIRECT, f08c47fec0942fa0
