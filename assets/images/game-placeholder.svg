@@ -17,7 +17,7 @@
   <path d="M28 447 C150 364 243 410 347 338 C459 261 533 322 631 262 C745 192 843 253 932 196 L932 612 L28 612 Z" fill="#315c52"/>
   <path d="M28 499 C132 444 245 478 356 438 C479 393 564 425 674 377 C770 335 856 359 932 329 L932 612 L28 612 Z" fill="#1f3f3d"/>
   <rect x="108" y="96" width="372" height="116" rx="14" fill="#fbfaf7" opacity="0.9" filter="url(#shadow)"/>
-  <text x="136" y="147" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#14313b">[Game Name]</text>
+  <text x="136" y="147" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#14313b">WaveFit!</text>
   <text x="136" y="184" font-family="Arial, sans-serif" font-size="18" fill="#596267">Screenshot / key art placeholder</text>
   <g transform="translate(350 272)">
     <rect x="0" y="0" width="260" height="188" rx="18" fill="#fbfaf7" filter="url(#shadow)"/>

@@ -1,4 +1,4 @@
-# Dundun Games Game Website
+# DunDunGames Game Website
 
 Google Play 개발자 웹사이트, 개인정보처리방침, 지원 페이지, AdMob `app-ads.txt`를 위한 무료 정적 홈페이지입니다.
 
@@ -18,8 +18,8 @@ Google Play 개발자 웹사이트, 개인정보처리방침, 지원 페이지, 
 
 ## 바꿔야 할 값 체크리스트
 
-- `Dundun Games`: Google Play에 표시할 개발자명 또는 스튜디오명
-- `[Game Name]`: 앱/게임 이름
+- `DunDunGames`: Google Play에 표시할 개발자명 또는 스튜디오명
+- `WaveFit!`: 앱/게임 이름
 - `dundunhada@gmail.com`: 지원 문의 이메일
 - `dundungames.com`: 실제 사용할 도메인
 - `[Google Play URL]`: Google Play 스토어 등록 후 생성되는 앱 URL
