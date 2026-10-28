@@ -18,6 +18,9 @@ Google Play 개발자 웹사이트, 개인정보처리방침, 지원 페이지, 
       app.js
   functions/
     api/weather.js
+  worker.js
+  wrangler.jsonc
+  .assetsignore
   assets/
     css/styles.css
     js/main.js
@@ -74,12 +77,12 @@ Production branch: main
 
 ## 실험실과 기상청 날씨 설정
 
-`/lab/`은 웹 프로젝트 목록이며 첫 프로젝트는 `/lab/weather-window/`입니다. 날씨 데이터는 Cloudflare Pages Function이 기상청 단기예보 API에서 받아오므로 인증키가 공개 저장소나 브라우저에 노출되지 않습니다.
+`/lab/`은 웹 프로젝트 목록이며 첫 프로젝트는 `/lab/weather-window/`입니다. 날씨 데이터는 Cloudflare Worker가 기상청 단기예보 API에서 받아오므로 인증키가 공개 저장소나 브라우저에 노출되지 않습니다. `worker.js`는 `/api/weather` 요청을 처리하고 다른 요청은 정적 사이트 자산으로 전달합니다.
 
 1. [공공데이터포털 기상청 단기예보 조회서비스](https://www.data.go.kr/data/15084084/openapi.do)에서 활용 신청합니다.
 2. 발급된 **일반 인증키(Decoding)** 값을 복사합니다.
-3. Cloudflare Dashboard에서 `Workers & Pages → game-website → Settings → Variables and Secrets`로 이동합니다.
-4. Production 환경에 `KMA_SERVICE_KEY`라는 이름의 Secret을 추가하고 인증키를 저장합니다.
+3. Cloudflare Dashboard에서 `Compute → Workers & Pages → game-website → Settings → Bindings`로 이동합니다.
+4. Production 환경에 `KMA_SERVICE_KEY`라는 이름의 Secret binding을 추가하고 인증키를 저장합니다.
 5. 새 배포를 실행합니다.
 
 인증키가 없으면 날씨 페이지는 깨지지 않고 도시 선택이 포함된 오류 상태를 표시합니다. 기상청 정보는 대한민국 영역만 지원하며, 동일 격자 응답은 5분간 캐시합니다.
