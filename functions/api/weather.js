@@ -16,7 +16,7 @@ export async function onRequestGet(context) {
   }
 
   const { x, y } = toKmaGrid(latitude, longitude);
-  const cacheKey = new Request(`${url.origin}/api/weather?nx=${x}&ny=${y}`);
+  const cacheKey = new Request(`${url.origin}/api/weather?v=2&nx=${x}&ny=${y}`);
   const cache = caches.default;
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
@@ -24,11 +24,13 @@ export async function onRequestGet(context) {
   try {
     const nowcastBase = koreaBaseTime(15, "00");
     const forecastBase = koreaBaseTime(45, "30");
-    const [nowcast, forecast] = await Promise.all([
+    const villageBase = villageForecastBase();
+    const [nowcast, forecast, villageForecast] = await Promise.all([
       fetchKma(context.env.KMA_SERVICE_KEY, "getUltraSrtNcst", nowcastBase, x, y),
       fetchKma(context.env.KMA_SERVICE_KEY, "getUltraSrtFcst", forecastBase, x, y),
+      fetchKma(context.env.KMA_SERVICE_KEY, "getVilageFcst", villageBase, x, y, 2000),
     ]);
-    const result = normalizeWeather(nowcast, forecast, x, y);
+    const result = normalizeWeather(nowcast, forecast, villageForecast, x, y);
     const response = json(result, 200, { "Cache-Control": "public, max-age=300" });
     context.waitUntil(cache.put(cacheKey, response.clone()));
     return response;
@@ -38,11 +40,11 @@ export async function onRequestGet(context) {
   }
 }
 
-async function fetchKma(serviceKey, method, base, x, y) {
+async function fetchKma(serviceKey, method, base, x, y, numOfRows = 1000) {
   const params = new URLSearchParams({
     serviceKey,
     pageNo: "1",
-    numOfRows: "1000",
+    numOfRows: String(numOfRows),
     dataType: "JSON",
     base_date: base.date,
     base_time: base.time,
@@ -57,7 +59,7 @@ async function fetchKma(serviceKey, method, base, x, y) {
   return data.response?.body?.items?.item || [];
 }
 
-function normalizeWeather(nowcast, forecast, x, y) {
+function normalizeWeather(nowcast, forecast, villageForecast, x, y) {
   const observed = Object.fromEntries(nowcast.map((item) => [item.category, item.obsrValue]));
   const nextForecast = [...forecast]
     .sort((a, b) => `${a.fcstDate}${a.fcstTime}`.localeCompare(`${b.fcstDate}${b.fcstTime}`));
@@ -68,10 +70,7 @@ function normalizeWeather(nowcast, forecast, x, y) {
 
   const precipitation = Number(observed.PTY ?? forecastValues.PTY ?? 0);
   const sky = Number(forecastValues.SKY ?? 1);
-  let condition = "clear";
-  if ([1, 4, 5].includes(precipitation)) condition = "rain";
-  else if ([2, 3, 6, 7].includes(precipitation)) condition = "snow";
-  else if (sky >= 3) condition = "cloudy";
+  const condition = weatherCondition(precipitation, sky);
 
   const koreaHour = Number(new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Seoul",
@@ -82,16 +81,81 @@ function normalizeWeather(nowcast, forecast, x, y) {
   const temperature = Number(observed.T1H ?? forecastValues.T1H);
   if (!Number.isFinite(temperature)) throw new Error("KMA temperature data is missing");
 
+  const hourlyForecast = groupByForecastTime(forecast)
+    .slice(0, 6)
+    .map(({ date, time, values }) => ({
+      date,
+      time,
+      temperature: finiteNumber(values.T1H),
+      condition: weatherCondition(Number(values.PTY ?? 0), Number(values.SKY ?? 1)),
+      isDay: Number(time.slice(0, 2)) >= 6 && Number(time.slice(0, 2)) < 18,
+    }))
+    .filter((item) => item.temperature !== null);
+
+  const dailyForecast = summarizeDays(villageForecast);
+
   return {
     temperature,
     condition,
     precipitationType: precipitation,
     sky,
     isDay: koreaHour >= 6 && koreaHour < 18,
+    hourlyForecast,
+    dailyForecast,
     observedAt: nowcast[0] ? `${nowcast[0].baseDate}T${nowcast[0].baseTime}` : null,
     grid: { x, y },
     source: "기상청",
   };
+}
+
+function groupByForecastTime(items) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = `${item.fcstDate}${item.fcstTime}`;
+    if (!groups.has(key)) groups.set(key, { date: item.fcstDate, time: item.fcstTime, values: {} });
+    groups.get(key).values[item.category] = item.fcstValue;
+  }
+  return [...groups.values()].sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
+}
+
+function summarizeDays(items) {
+  const days = new Map();
+  for (const slot of groupByForecastTime(items)) {
+    if (!days.has(slot.date)) days.set(slot.date, []);
+    days.get(slot.date).push(slot);
+  }
+
+  return [...days.entries()].slice(0, 5).map(([date, slots]) => {
+    const temperatures = slots.map((slot) => finiteNumber(slot.values.TMP)).filter((value) => value !== null);
+    const minValue = slots.map((slot) => finiteNumber(slot.values.TMN)).find((value) => value !== null);
+    const maxValue = slots.map((slot) => finiteNumber(slot.values.TMX)).find((value) => value !== null);
+    const conditions = slots.map((slot) => weatherCondition(
+      Number(slot.values.PTY ?? 0),
+      Number(slot.values.SKY ?? 1),
+    ));
+    const condition = ["snow", "rain", "cloudy", "clear"].find((value) => conditions.includes(value)) || "cloudy";
+    const noon = slots.find((slot) => slot.time === "1200") || slots[Math.floor(slots.length / 2)];
+
+    return {
+      date,
+      condition,
+      temperatureMin: minValue ?? (temperatures.length ? Math.min(...temperatures) : null),
+      temperatureMax: maxValue ?? (temperatures.length ? Math.max(...temperatures) : null),
+      representativeTemperature: finiteNumber(noon?.values.TMP),
+    };
+  });
+}
+
+function weatherCondition(precipitation, sky) {
+  if ([1, 4, 5].includes(precipitation)) return "rain";
+  if ([2, 3, 6, 7].includes(precipitation)) return "snow";
+  if (sky >= 3) return "cloudy";
+  return "clear";
+}
+
+function finiteNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function koreaBaseTime(minutesAgo, fixedMinute) {
@@ -105,6 +169,30 @@ function koreaBaseTime(minutesAgo, fixedMinute) {
     hourCycle: "h23",
   }).formatToParts(date).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
   return { date: `${parts.year}${parts.month}${parts.day}`, time: `${parts.hour}${fixedMinute}` };
+}
+
+function villageForecastBase() {
+  const baseHours = new Set([2, 5, 8, 11, 14, 17, 20, 23]);
+  const availableAt = new Date(Date.now() - 15 * 60 * 1000);
+  for (let hoursAgo = 0; hoursAgo < 24; hoursAgo += 1) {
+    const parts = koreaParts(new Date(availableAt.getTime() - hoursAgo * 60 * 60 * 1000));
+    const hour = Number(parts.hour);
+    if (baseHours.has(hour)) {
+      return { date: `${parts.year}${parts.month}${parts.day}`, time: `${parts.hour}00` };
+    }
+  }
+  throw new Error("Unable to determine KMA village forecast base time");
+}
+
+function koreaParts(date) {
+  return Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
 }
 
 export function toKmaGrid(lat, lon) {

@@ -5,6 +5,8 @@ const ui = {
   fallback: document.querySelector("#fallback-panel"), fallbackMessage: document.querySelector("#fallback-message"),
   cityForm: document.querySelector("#city-form"), citySelect: document.querySelector("#city-select"),
   retryLocation: document.querySelector("#retry-location"),
+  forecastPanel: document.querySelector("#forecast-panel"),
+  hourlyList: document.querySelector("#hourly-list"), weeklyList: document.querySelector("#weekly-list"),
 };
 
 const CITIES = {
@@ -25,6 +27,10 @@ const COPY = {
   snow: { day: ["눈이 내리고 있어요", "하얀 눈송이가 천천히 내려와요."], night: ["눈 내리는 밤이에요", "밤하늘 아래 눈송이가 반짝여요."] },
 };
 
+const ICONS = { clear: "☀", cloudy: "☁", rain: "☂", snow: "❄" };
+let currentPlaceName = "현재 위치";
+let weatherData = null;
+
 function setLoading(text = "현재 위치를 찾는 중") {
   ui.card.setAttribute("aria-busy", "true");
   ui.window.dataset.weather = "loading";
@@ -32,6 +38,7 @@ function setLoading(text = "현재 위치를 찾는 중") {
   ui.title.textContent = "잠시, 창밖을 불러올게요";
   ui.description.textContent = "기상청에서 지금의 하늘을 확인하고 있어요.";
   ui.temperature.innerHTML = "--<span>°</span>";
+  ui.forecastPanel.hidden = true;
 }
 
 async function fetchWeather(place) {
@@ -49,17 +56,142 @@ function renderWeather(placeName, data) {
   if (!Number.isFinite(temperature)) {
     throw new Error("기온 정보가 올바르지 않습니다.");
   }
-  const weather = COPY[data.condition] ? data.condition : "cloudy";
-  const time = data.isDay ? "day" : "night";
-  const [title, description] = COPY[weather][time];
+  currentPlaceName = placeName;
+  weatherData = data;
+  renderScene({
+    label: `${placeName} · ${data.isDay ? "낮" : "밤"}`,
+    condition: data.condition,
+    isDay: data.isDay,
+    temperature,
+  });
+  renderForecastControls();
+  ui.card.setAttribute("aria-busy", "false");
+}
+
+function renderScene({ label, condition, isDay, temperature, description }) {
+  const weather = COPY[condition] ? condition : "cloudy";
+  const time = isDay ? "day" : "night";
+  const [title, defaultDescription] = COPY[weather][time];
   ui.window.dataset.weather = weather;
   ui.window.dataset.time = time;
-  ui.location.textContent = `${placeName} · ${time === "day" ? "낮" : "밤"}`;
+  ui.location.textContent = label;
   ui.title.textContent = title;
-  ui.description.textContent = description;
+  ui.description.textContent = description || defaultDescription;
   ui.temperature.innerHTML = `${Math.round(temperature)}<span>°</span>`;
-  ui.temperature.setAttribute("aria-label", `현재 기온 섭씨 ${Math.round(temperature)}도`);
-  ui.card.setAttribute("aria-busy", "false");
+  ui.temperature.setAttribute("aria-label", `기온 섭씨 ${Math.round(temperature)}도`);
+}
+
+function renderForecastControls() {
+  ui.hourlyList.replaceChildren();
+  ui.weeklyList.replaceChildren();
+
+  const current = createForecastButton({
+    className: "hour-button is-selected",
+    label: "지금",
+    icon: weatherIcon(weatherData.condition, weatherData.isDay),
+    detail: `${Math.round(weatherData.temperature)}°`,
+    pressed: true,
+    onClick: (button) => {
+      selectForecastButton(button);
+      renderScene({
+        label: `${currentPlaceName} · 지금`,
+        condition: weatherData.condition,
+        isDay: weatherData.isDay,
+        temperature: weatherData.temperature,
+      });
+    },
+  });
+  ui.hourlyList.append(current);
+
+  for (const hour of weatherData.hourlyForecast || []) {
+    const hourText = `${hour.time.slice(0, 2)}시`;
+    ui.hourlyList.append(createForecastButton({
+      className: "hour-button",
+      label: hourText,
+      icon: weatherIcon(hour.condition, hour.isDay),
+      detail: `${Math.round(hour.temperature)}°`,
+      onClick: (button) => {
+        selectForecastButton(button);
+        renderScene({
+          label: `${currentPlaceName} · ${formatFullDate(hour.date)} ${hourText}`,
+          condition: hour.condition,
+          isDay: hour.isDay,
+          temperature: hour.temperature,
+          description: `${hourText}에 예상되는 창밖 풍경이에요.`,
+        });
+      },
+    }));
+  }
+
+  for (const day of weatherData.dailyForecast || []) {
+    const min = Number(day.temperatureMin);
+    const max = Number(day.temperatureMax);
+    const representative = Number.isFinite(Number(day.representativeTemperature))
+      ? Number(day.representativeTemperature)
+      : Number.isFinite(max) ? max : Number.isFinite(min) ? min : weatherData.temperature;
+    const range = Number.isFinite(min) && Number.isFinite(max)
+      ? `최저 ${Math.round(min)}° · 최고 ${Math.round(max)}°`
+      : "기온 정보 준비 중";
+    ui.weeklyList.append(createForecastButton({
+      className: "day-button",
+      label: formatShortDate(day.date),
+      icon: weatherIcon(day.condition, true),
+      ariaLabel: `${formatFullDate(day.date)}, ${conditionName(day.condition)}, ${range}`,
+      onClick: (button) => {
+        selectForecastButton(button);
+        renderScene({
+          label: `${currentPlaceName} · ${formatFullDate(day.date)}`,
+          condition: day.condition,
+          isDay: true,
+          temperature: representative,
+          description: range,
+        });
+      },
+    }));
+  }
+
+  ui.forecastPanel.hidden = !(ui.hourlyList.children.length || ui.weeklyList.children.length);
+}
+
+function createForecastButton({ className, label, icon, detail, ariaLabel, pressed = false, onClick }) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = className;
+  button.setAttribute("role", "listitem");
+  button.setAttribute("aria-pressed", String(pressed));
+  if (ariaLabel) button.setAttribute("aria-label", ariaLabel);
+  button.innerHTML = `<span class="forecast-label">${label}</span><span class="weather-icon" aria-hidden="true">${icon}</span>${detail ? `<span class="forecast-detail">${detail}</span>` : ""}`;
+  button.addEventListener("click", () => onClick(button));
+  return button;
+}
+
+function selectForecastButton(selected) {
+  document.querySelectorAll(".hour-button,.day-button").forEach((button) => {
+    const active = button === selected;
+    button.classList.toggle("is-selected", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function weatherIcon(condition, isDay) {
+  if (condition === "clear" && !isDay) return "☾";
+  return ICONS[condition] || ICONS.cloudy;
+}
+
+function conditionName(condition) {
+  return { clear: "맑음", cloudy: "흐림", rain: "비", snow: "눈" }[condition] || "흐림";
+}
+
+function parseForecastDate(value) {
+  return new Date(`${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}T12:00:00+09:00`);
+}
+
+function formatShortDate(value) {
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short" }).format(parseForecastDate(value));
+}
+
+function formatFullDate(value) {
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short" }).format(parseForecastDate(value));
 }
 
 function showError(title, message) {
@@ -71,6 +203,7 @@ function showError(title, message) {
   ui.temperature.innerHTML = "--<span>°</span>";
   ui.fallbackMessage.textContent = message;
   ui.fallback.hidden = false;
+  ui.forecastPanel.hidden = true;
 }
 
 function locateUser() {

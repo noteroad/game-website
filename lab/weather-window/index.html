@@ -52,6 +52,23 @@
         <p class="temperature" id="temperature" aria-label="현재 기온">--<span>°</span></p>
       </div>
 
+      <section class="forecast-panel" id="forecast-panel" aria-label="날씨 예보" hidden>
+        <div class="hourly-section">
+          <div class="forecast-heading">
+            <h2>앞으로 6시간</h2>
+            <p>시간을 눌러 창밖을 미리 보세요</p>
+          </div>
+          <div class="hourly-list" id="hourly-list" role="list"></div>
+        </div>
+        <div class="weekly-section">
+          <div class="forecast-heading">
+            <h2>이번 주의 창</h2>
+            <p>날짜를 누르면 그날의 하늘이 열려요</p>
+          </div>
+          <div class="weekly-list" id="weekly-list" role="list"></div>
+        </div>
+      </section>
+
       <div class="fallback-panel" id="fallback-panel" hidden>
         <p id="fallback-message">위치를 확인하지 못했어요. 가까운 도시를 선택하거나 서울의 날씨를 볼 수 있어요.</p>
         <form class="city-form" id="city-form">

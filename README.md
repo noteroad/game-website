@@ -77,7 +77,7 @@ Production branch: main
 
 ## 실험실과 기상청 날씨 설정
 
-`/lab/`은 웹 프로젝트 목록이며 첫 프로젝트는 `/lab/weather-window/`입니다. 날씨 데이터는 Cloudflare Worker가 기상청 단기예보 API에서 받아오므로 인증키가 공개 저장소나 브라우저에 노출되지 않습니다. `worker.js`는 `/api/weather` 요청을 처리하고 다른 요청은 정적 사이트 자산으로 전달합니다.
+`/lab/`은 웹 프로젝트 목록이며 첫 프로젝트는 `/lab/weather-window/`입니다. 현재 날씨와 향후 6시간, 최대 5일의 간단한 예보를 제공합니다. 날씨 데이터는 Cloudflare Worker가 기상청 단기예보 API에서 받아오므로 인증키가 공개 저장소나 브라우저에 노출되지 않습니다. `worker.js`는 `/api/weather` 요청을 처리하고 다른 요청은 정적 사이트 자산으로 전달합니다.
 
 1. [공공데이터포털 기상청 단기예보 조회서비스](https://www.data.go.kr/data/15084084/openapi.do)에서 활용 신청합니다.
 2. 발급된 **일반 인증키(Decoding)** 값을 복사합니다.
