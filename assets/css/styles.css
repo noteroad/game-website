@@ -296,6 +296,87 @@ img {
   text-decoration: none;
 }
 
+.lab-hero {
+  width: min(var(--max), calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(4rem, 10vw, 8rem) 0 clamp(2.5rem, 6vw, 4rem);
+}
+
+.lab-hero h1 {
+  max-width: 860px;
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.project-grid {
+  width: min(var(--max), calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 clamp(4rem, 10vw, 8rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.project-card {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.4rem, 4vw, 2.4rem);
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(20, 49, 59, 0.12);
+}
+
+.project-card.weather-project {
+  background:
+    radial-gradient(circle at 76% 23%, #ffe59a 0 8%, transparent 8.5%),
+    linear-gradient(155deg, #9dd7ee 0 52%, #e9d5b5 52% 100%);
+}
+
+.project-number {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.project-card h2 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.project-card p {
+  max-width: 480px;
+  margin: 0.8rem 0 0;
+}
+
+.project-arrow {
+  align-self: flex-end;
+  font-size: 2rem;
+}
+
+.project-card.coming-soon {
+  justify-content: center;
+  color: var(--muted);
+  background: transparent;
+  border-style: dashed;
+}
+
 .document-page {
   width: min(860px, calc(100% - 2rem));
   margin: 0 auto;
@@ -404,7 +485,8 @@ img {
 
   .text-columns,
   .feature-grid,
-  .link-list {
+  .link-list,
+  .project-grid {
     grid-template-columns: 1fr;
   }
 

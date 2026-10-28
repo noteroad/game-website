@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DunDunGames가 만드는 작은 웹 프로젝트와 인터랙티브 실험을 만나보세요.">
+  <title>실험실 | DunDunGames</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <nav class="nav" aria-label="주요 메뉴">
+      <a class="brand" href="../">DunDunGames</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu">
+        <span class="nav-toggle-bar"></span>
+        <span class="sr-only">메뉴 열기</span>
+      </button>
+      <div class="nav-links" id="site-menu">
+        <a href="../">홈</a>
+        <a href="./" aria-current="page">실험실</a>
+        <a href="../support.html">지원</a>
+        <a href="../privacy.html">개인정보처리방침</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="lab-hero">
+      <p class="eyebrow">Dundun Lab</p>
+      <h1>작은 아이디어를 직접 만져보는 곳.</h1>
+      <p class="lead">게임 밖에서도 재미와 감각을 실험합니다. 가볍게 시작해 하나씩 확장해 나갈 웹 프로젝트 모음입니다.</p>
+    </section>
+
+    <section class="project-grid" aria-label="웹 프로젝트">
+      <a class="project-card weather-project" href="weather-window/">
+        <span class="project-number">Experiment 001</span>
+        <div>
+          <h2>오늘의 창</h2>
+          <p>현재 위치의 기상청 날씨를 조용한 창밖 풍경으로 바라보는 인터랙티브 페이지.</p>
+        </div>
+        <span class="project-arrow" aria-hidden="true">↗</span>
+      </a>
+      <div class="project-card coming-soon">
+        <span class="project-number">More soon</span>
+        <div>
+          <h2>다음 실험 준비 중</h2>
+          <p>새로운 프로젝트가 이곳에 차례로 추가됩니다.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="year"></span> DunDunGames. All rights reserved.</p>
+    <p><a href="../">Home</a> · <a href="../privacy.html">Privacy Policy</a></p>
+  </footer>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#d8b893">
+  <meta name="description" content="현재 위치의 기상청 날씨를 창밖 풍경처럼 보여주는 인터랙티브 웹 프로젝트">
+  <title>오늘의 창 | Dundun Lab</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="room">
+    <header class="topbar">
+      <a class="back-link" href="../" aria-label="Dundun Lab으로 돌아가기"><span aria-hidden="true">←</span> 실험실</a>
+      <p class="privacy-note">위치는 날씨 확인에만 사용돼요</p>
+    </header>
+
+    <section class="weather-experience" aria-labelledby="weather-title">
+      <div class="window-wrap">
+        <div class="window" id="window" data-weather="loading" data-time="day">
+          <div class="view" aria-hidden="true">
+            <div class="stars"></div>
+            <div class="sun-moon"></div>
+            <div class="cloud cloud-one"></div>
+            <div class="cloud cloud-two"></div>
+            <div class="cloud cloud-three"></div>
+            <div class="rain"></div>
+            <div class="snow"></div>
+            <div class="landscape far"></div>
+            <div class="landscape near"></div>
+            <div class="city-lights"></div>
+          </div>
+          <div class="glass-shine" aria-hidden="true"></div>
+          <div class="frame vertical" aria-hidden="true"></div>
+          <div class="frame horizontal" aria-hidden="true"></div>
+          <div class="window-sill" aria-hidden="true"></div>
+        </div>
+        <div class="plant" aria-hidden="true">
+          <span class="leaf leaf-a"></span><span class="leaf leaf-b"></span>
+          <span class="leaf leaf-c"></span><span class="leaf leaf-d"></span>
+          <span class="stem"></span><span class="pot"></span>
+        </div>
+      </div>
+
+      <div class="weather-card" aria-live="polite" aria-busy="true" id="weather-card">
+        <div>
+          <p class="eyebrow" id="location">현재 위치를 찾는 중</p>
+          <h1 id="weather-title">잠시, 창밖을 불러올게요</h1>
+          <p class="description" id="description">위치 권한을 허용하면 지금의 하늘을 보여드려요.</p>
+        </div>
+        <p class="temperature" id="temperature" aria-label="현재 기온">--<span>°</span></p>
+      </div>
+
+      <div class="fallback-panel" id="fallback-panel" hidden>
+        <p id="fallback-message">위치를 확인하지 못했어요. 가까운 도시를 선택하거나 서울의 날씨를 볼 수 있어요.</p>
+        <form class="city-form" id="city-form">
+          <label class="sr-only" for="city-select">도시 선택</label>
+          <select id="city-select" name="city">
+            <option value="seoul">서울</option><option value="busan">부산</option>
+            <option value="incheon">인천</option><option value="daegu">대구</option>
+            <option value="daejeon">대전</option><option value="gwangju">광주</option>
+            <option value="gangneung">강릉</option><option value="jeju">제주</option>
+          </select>
+          <button type="submit">날씨 보기</button>
+        </form>
+        <button class="text-button" type="button" id="retry-location">위치 다시 시도</button>
+      </div>
+    </section>
+
+    <footer class="source-note">
+      날씨 정보 제공: <a href="https://www.weather.go.kr/" target="_blank" rel="noopener">기상청</a>
+    </footer>
+  </main>
+  <noscript>현재 날씨를 확인하려면 JavaScript를 켜주세요.</noscript>
+</body>
+</html>
