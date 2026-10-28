@@ -7,6 +7,7 @@ const ui = {
   retryLocation: document.querySelector("#retry-location"),
   forecastPanel: document.querySelector("#forecast-panel"),
   hourlyList: document.querySelector("#hourly-list"), weeklyList: document.querySelector("#weekly-list"),
+  playForecast: document.querySelector("#play-forecast"), playLabel: document.querySelector("#play-label"),
 };
 
 const CITIES = {
@@ -28,10 +29,20 @@ const COPY = {
 };
 
 const ICONS = { clear: "☀", cloudy: "☁", rain: "☂", snow: "❄" };
+const REGIONS = [
+  ["서울", 37.5665, 126.978], ["부산", 35.1796, 129.0756], ["대구", 35.8714, 128.6014],
+  ["인천", 37.4563, 126.7052], ["광주", 35.1595, 126.8526], ["대전", 36.3504, 127.3845],
+  ["울산", 35.5384, 129.3114], ["세종", 36.48, 127.289], ["경기", 37.2636, 127.0286],
+  ["강원", 37.8813, 127.73], ["충북", 36.6424, 127.489], ["충남", 36.601, 126.6608],
+  ["전북", 35.8242, 127.148], ["전남", 34.8161, 126.463], ["경북", 36.5684, 128.7294],
+  ["경남", 35.2279, 128.6811], ["제주", 33.4996, 126.5312],
+];
 let currentPlaceName = "현재 위치";
 let weatherData = null;
+let playbackToken = 0;
 
 function setLoading(text = "현재 위치를 찾는 중") {
+  stopPlayback();
   ui.card.setAttribute("aria-busy", "true");
   ui.window.dataset.weather = "loading";
   ui.location.textContent = text;
@@ -85,24 +96,6 @@ function renderForecastControls() {
   ui.hourlyList.replaceChildren();
   ui.weeklyList.replaceChildren();
 
-  const current = createForecastButton({
-    className: "hour-button is-selected",
-    label: "지금",
-    icon: weatherIcon(weatherData.condition, weatherData.isDay),
-    detail: `${Math.round(weatherData.temperature)}°`,
-    pressed: true,
-    onClick: (button) => {
-      selectForecastButton(button);
-      renderScene({
-        label: `${currentPlaceName} · 지금`,
-        condition: weatherData.condition,
-        isDay: weatherData.isDay,
-        temperature: weatherData.temperature,
-      });
-    },
-  });
-  ui.hourlyList.append(current);
-
   for (const hour of weatherData.hourlyForecast || []) {
     const hourText = `${hour.time.slice(0, 2)}시`;
     ui.hourlyList.append(createForecastButton({
@@ -111,14 +104,9 @@ function renderForecastControls() {
       icon: weatherIcon(hour.condition, hour.isDay),
       detail: `${Math.round(hour.temperature)}°`,
       onClick: (button) => {
+        stopPlayback();
         selectForecastButton(button);
-        renderScene({
-          label: `${currentPlaceName} · ${formatFullDate(hour.date)} ${hourText}`,
-          condition: hour.condition,
-          isDay: hour.isDay,
-          temperature: hour.temperature,
-          description: `${hourText}에 예상되는 창밖 풍경이에요.`,
-        });
+        renderHour(hour);
       },
     }));
   }
@@ -138,6 +126,7 @@ function renderForecastControls() {
       icon: weatherIcon(day.condition, true),
       ariaLabel: `${formatFullDate(day.date)}, ${conditionName(day.condition)}, ${range}`,
       onClick: (button) => {
+        stopPlayback();
         selectForecastButton(button);
         renderScene({
           label: `${currentPlaceName} · ${formatFullDate(day.date)}`,
@@ -151,13 +140,57 @@ function renderForecastControls() {
   }
 
   ui.forecastPanel.hidden = !(ui.hourlyList.children.length || ui.weeklyList.children.length);
+  ui.playForecast.hidden = !ui.hourlyList.children.length;
+  ui.playLabel.textContent = "미리 보기";
+}
+
+function renderHour(hour) {
+  const hourText = `${hour.time.slice(0, 2)}시`;
+  renderScene({
+    label: `${currentPlaceName} · ${formatFullDate(hour.date)} ${hourText}`,
+    condition: hour.condition,
+    isDay: hour.isDay,
+    temperature: hour.temperature,
+    description: `${hourText}에 예상되는 창밖 풍경이에요.`,
+  });
+}
+
+async function playHourlyForecast() {
+  const hours = weatherData?.hourlyForecast || [];
+  if (!hours.length) return;
+  const token = ++playbackToken;
+  ui.playForecast.classList.add("is-playing");
+  ui.playForecast.setAttribute("aria-pressed", "true");
+  ui.playLabel.textContent = "재생 중";
+  const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 650 : 1250;
+
+  for (let index = 0; index < hours.length; index += 1) {
+    if (token !== playbackToken) return;
+    const button = ui.hourlyList.children[index];
+    selectForecastButton(button);
+    renderHour(hours[index]);
+    await new Promise((resolve) => window.setTimeout(resolve, delay));
+  }
+
+  if (token === playbackToken) {
+    ui.playForecast.classList.remove("is-playing");
+    ui.playForecast.setAttribute("aria-pressed", "false");
+    ui.playLabel.textContent = "다시 보기";
+  }
+}
+
+function stopPlayback() {
+  playbackToken += 1;
+  if (!ui.playForecast) return;
+  ui.playForecast.classList.remove("is-playing");
+  ui.playForecast.setAttribute("aria-pressed", "false");
+  ui.playLabel.textContent = "미리 보기";
 }
 
 function createForecastButton({ className, label, icon, detail, ariaLabel, pressed = false, onClick }) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = className;
-  button.setAttribute("role", "listitem");
   button.setAttribute("aria-pressed", String(pressed));
   if (ariaLabel) button.setAttribute("aria-label", ariaLabel);
   button.innerHTML = `<span class="forecast-label">${label}</span><span class="weather-icon" aria-hidden="true">${icon}</span>${detail ? `<span class="forecast-detail">${detail}</span>` : ""}`;
@@ -194,6 +227,21 @@ function formatFullDate(value) {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short" }).format(parseForecastDate(value));
 }
 
+function nearestRegion(latitude, longitude) {
+  let nearest = REGIONS[0];
+  let nearestDistance = Infinity;
+  for (const region of REGIONS) {
+    const latitudeDistance = (latitude - region[1]) * 111;
+    const longitudeDistance = (longitude - region[2]) * 88;
+    const distance = latitudeDistance ** 2 + longitudeDistance ** 2;
+    if (distance < nearestDistance) {
+      nearest = region;
+      nearestDistance = distance;
+    }
+  }
+  return `${nearest[0]} 인근`;
+}
+
 function showError(title, message) {
   ui.window.dataset.weather = "error";
   ui.card.setAttribute("aria-busy", "false");
@@ -213,7 +261,7 @@ function locateUser() {
     return;
   }
   navigator.geolocation.getCurrentPosition(
-    ({ coords }) => fetchWeather({ name: "현재 위치", latitude: coords.latitude, longitude: coords.longitude })
+    ({ coords }) => fetchWeather({ name: nearestRegion(coords.latitude, coords.longitude), latitude: coords.latitude, longitude: coords.longitude })
       .catch((error) => showError("하늘과 연결되지 않았어요", error.message)),
     (error) => showError(
       error.code === error.PERMISSION_DENIED ? "위치 권한이 꺼져 있어요" : "현재 위치를 찾지 못했어요",
@@ -228,4 +276,5 @@ ui.cityForm.addEventListener("submit", (event) => {
   fetchWeather(CITIES[ui.citySelect.value]).catch((error) => showError("날씨를 불러오지 못했어요", error.message));
 });
 ui.retryLocation.addEventListener("click", locateUser);
+ui.playForecast.addEventListener("click", playHourlyForecast);
 locateUser();

@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#d8b893">
   <meta name="description" content="현재 위치의 기상청 날씨를 창밖 풍경처럼 보여주는 인터랙티브 웹 프로젝트">
   <title>오늘의 창 | Dundun Lab</title>
-  <link rel="stylesheet" href="styles.css?v=2">
-  <script src="app.js?v=2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=3">
+  <script src="app.js?v=3" defer></script>
 </head>
 <body>
   <main class="room">
@@ -55,17 +55,22 @@
       <section class="forecast-panel" id="forecast-panel" aria-label="날씨 예보" hidden>
         <div class="hourly-section">
           <div class="forecast-heading">
-            <h2>앞으로 6시간</h2>
-            <p>시간을 눌러 창밖을 미리 보세요</p>
+            <div>
+              <h2>앞으로 6시간</h2>
+              <p>다가올 하늘을 한 장면씩 미리 봐요</p>
+            </div>
+            <button class="play-button" id="play-forecast" type="button" aria-label="6시간 날씨 변화 재생">
+              <span aria-hidden="true">▶</span><span id="play-label">미리 보기</span>
+            </button>
           </div>
-          <div class="hourly-list" id="hourly-list" role="list"></div>
+          <div class="hourly-list" id="hourly-list"></div>
         </div>
         <div class="weekly-section">
           <div class="forecast-heading">
             <h2>이번 주의 창</h2>
             <p>날짜를 누르면 그날의 하늘이 열려요</p>
           </div>
-          <div class="weekly-list" id="weekly-list" role="list"></div>
+          <div class="weekly-list" id="weekly-list"></div>
         </div>
       </section>
 
