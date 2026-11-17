@@ -63,7 +63,7 @@ google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
 https://dundungames.com/app-ads.txt
 ```
 
-## 잔돈 교환 계산기
+## 잔돈 교환기
 
 `/lab/change-calculator/`에서 실행됩니다. 계산 기록과 설정은 각 사용자의 브라우저 `localStorage`에만 저장됩니다.
 
