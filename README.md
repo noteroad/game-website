@@ -16,6 +16,11 @@ Google Play 개발자 웹사이트, 개인정보처리방침, 지원 페이지, 
       index.html
       styles.css
       app.js
+    change-calculator/
+      index.html
+      manifest.webmanifest
+      sw.js
+      icon.svg
   functions/
     api/weather.js
   worker.js
@@ -57,6 +62,14 @@ google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
 ```text
 https://dundungames.com/app-ads.txt
 ```
+
+## 잔돈 교환 계산기
+
+`/lab/change-calculator/`에서 실행됩니다. 계산 기록과 설정은 각 사용자의 브라우저 `localStorage`에만 저장됩니다.
+
+서비스 워커가 계산기 실행 파일을 캐시하므로, 사용자가 온라인 상태에서 한 번 정상 접속한 뒤에는 인터넷 연결 없이 다시 열 수 있습니다. 모바일에서는 브라우저의 **홈 화면에 추가** 기능을 사용하면 독립 앱처럼 실행할 수 있습니다.
+
+서비스 워커는 보안 연결에서만 동작하므로 실제 도메인의 HTTPS 주소 또는 개발 중 `localhost`에서 확인해야 합니다.
 
 ## 추천 배포 방식
 

@@ -1,0 +1,19 @@
+{
+  "name": "잔돈 교환 계산기",
+  "short_name": "잔돈 계산기",
+  "description": "화폐별 수량과 묶음 단위를 빠르게 계산하고 교환 내역을 저장합니다.",
+  "lang": "ko-KR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
